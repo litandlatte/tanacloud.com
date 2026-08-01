@@ -1,0 +1,58 @@
+# tanacloud.com
+#
+# ⚠️ HOSTINGER TRAP: the File Manager ZIP extractor SILENTLY SKIPS DOTFILES.
+#    This file will NOT land via a ZIP upload. After every deploy, create it by hand:
+#    File Manager → public_html → New File → ".htaccess" → Edit → paste → Save.
+#    Verify by BEHAVIOUR (do the redirects fire?), never by probing /.htaccess —
+#    LiteSpeed returns 403 for that path whether or not the file exists.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # ---------------------------------------------------------------
+  # SHORT LINKS  →  external destinations
+  # Add one line per new short link, then also create <slug>/index.html
+  # as a fallback in case this file goes missing on a deploy.
+  # ---------------------------------------------------------------
+  RewriteRule ^h3/?$ https://tana.pub/6d5CCwsPxuD-/geospatial-data-science-with-ubers-h3 [R=301,L,NE]
+
+  # ---------------------------------------------------------------
+  # Canonical host: www → non-www (straight to https, so it is one hop)
+  # ---------------------------------------------------------------
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+  # ---------------------------------------------------------------
+  # /index.html → /
+  # Matched against THE_REQUEST, not REQUEST_URI: matching the URI also
+  # catches Apache's internal rewrite of "/" to "/index.html" and loops forever.
+  # ---------------------------------------------------------------
+  RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+  RewriteRule ^ / [R=301,L]
+
+  # NOTE: deliberately NO http→https rule. The host already 301s that, and a
+  # duplicate rule can loop behind a TLS-terminating proxy where %{HTTPS} reads "off".
+</IfModule>
+
+# ---------------------------------------------------------------
+# Keep repo housekeeping files out of the served site
+# Wrapped so an Apache 2.2 stack degrades instead of 500-ing the whole site.
+# ---------------------------------------------------------------
+<IfModule mod_authz_core.c>
+  <FilesMatch "^(README\.md|\.gitignore)$">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+
+# ---------------------------------------------------------------
+# Caching: long for static assets, short for HTML so edits show up
+# ---------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css            "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/png           "access plus 30 days"
+  ExpiresByType image/jpeg          "access plus 30 days"
+  ExpiresByType image/svg+xml       "access plus 30 days"
+  ExpiresByType text/html           "access plus 10 minutes"
+</IfModule>

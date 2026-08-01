@@ -1,0 +1,173 @@
+/* tanacloud.com — Rohit Kumar's data science site
+   Hand-written, no build step, no external requests. */
+
+:root {
+  --bg:        #0a0e14;
+  --bg-raised: #111721;
+  --bg-hover:  #161d29;
+  --line:      #1f2937;
+  --line-soft: #172033;
+  --text:      #e6edf3;
+  --muted:     #8b98a9;
+  --dim:       #5f6b7c;
+  --accent:    #4fd1c5;
+  --accent-dim:#2a8a82;
+
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --wrap: 62rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 0 1.5rem; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ---------- nav ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(10, 14, 20, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.nav__inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; height: 4rem;
+}
+.nav__brand {
+  font-family: var(--mono); font-size: 1.05rem; font-weight: 600;
+  color: var(--text); letter-spacing: -0.02em;
+}
+.nav__brand:hover { text-decoration: none; color: var(--accent); }
+.nav__brand .dot { color: var(--accent); }
+.nav__links { display: flex; gap: 1.5rem; align-items: center; }
+.nav__links a { color: var(--muted); font-size: 0.94rem; }
+.nav__links a:hover { color: var(--text); text-decoration: none; }
+.nav__links a[aria-current="page"] { color: var(--text); }
+
+/* ---------- hero ---------- */
+.hero { padding: 5.5rem 0 4rem; border-bottom: 1px solid var(--line-soft); }
+.hero__eyebrow {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--accent); margin: 0 0 1.25rem;
+}
+.hero h1 {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2.1rem, 5.5vw, 3.4rem);
+  line-height: 1.1; letter-spacing: -0.03em; font-weight: 700;
+}
+.hero p {
+  margin: 0 0 2rem; max-width: 44rem;
+  font-size: 1.12rem; color: var(--muted);
+}
+.hero p strong { color: var(--text); font-weight: 600; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-block; padding: 0.7rem 1.4rem;
+  border-radius: 7px; font-size: 0.95rem; font-weight: 600;
+  border: 1px solid transparent; transition: background 0.15s, border-color 0.15s;
+}
+.btn:hover { text-decoration: none; }
+.btn--primary { background: var(--accent); color: #07110f; }
+.btn--primary:hover { background: #6ee0d5; }
+.btn--ghost { border-color: var(--line); color: var(--text); }
+.btn--ghost:hover { border-color: var(--accent-dim); background: var(--bg-raised); }
+.btn-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+/* ---------- sections ---------- */
+.section { padding: 4rem 0; border-bottom: 1px solid var(--line-soft); }
+.section:last-of-type { border-bottom: 0; }
+.section__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.55rem; letter-spacing: -0.02em; font-weight: 700;
+}
+.section__lede { margin: 0 0 2.25rem; color: var(--muted); max-width: 42rem; }
+
+/* ---------- what's here grid ---------- */
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.tile {
+  background: var(--bg-raised); border: 1px solid var(--line-soft);
+  border-radius: 10px; padding: 1.4rem;
+}
+.tile h3 {
+  margin: 0 0 0.5rem; font-size: 1rem; font-weight: 600;
+  font-family: var(--mono); color: var(--accent);
+}
+.tile p { margin: 0; font-size: 0.94rem; color: var(--muted); }
+
+/* ---------- hub entries ---------- */
+.entries { display: flex; flex-direction: column; gap: 1rem; }
+.entry {
+  display: block;
+  background: var(--bg-raised); border: 1px solid var(--line-soft);
+  border-radius: 10px; padding: 1.5rem;
+  color: inherit; transition: border-color 0.15s, background 0.15s;
+}
+.entry:hover { text-decoration: none; border-color: var(--accent-dim); background: var(--bg-hover); }
+.entry__meta {
+  display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;
+  font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--dim); margin-bottom: 0.7rem;
+}
+.tag {
+  border: 1px solid var(--line); border-radius: 99px;
+  padding: 0.15rem 0.6rem; color: var(--accent);
+}
+/* separator dots between the plain meta items, but not after the tag pill */
+.entry__meta span:not(.tag) + span::before {
+  content: "\00B7"; margin-right: 0.6rem; color: var(--line);
+}
+.entry h3 {
+  margin: 0 0 0.5rem; font-size: 1.22rem; font-weight: 700;
+  letter-spacing: -0.02em; color: var(--text);
+}
+.entry p { margin: 0 0 0.9rem; color: var(--muted); font-size: 0.97rem; }
+.entry__link { font-family: var(--mono); font-size: 0.86rem; color: var(--accent); }
+.entry__link::after { content: " \2192"; }
+
+/* empty-state / coming-soon note */
+.note {
+  border: 1px dashed var(--line); border-radius: 10px;
+  padding: 1.25rem 1.5rem; color: var(--dim); font-size: 0.94rem;
+}
+
+/* ---------- about ---------- */
+.about p { color: var(--muted); max-width: 44rem; }
+.about p strong { color: var(--text); font-weight: 600; }
+
+/* ---------- footer ---------- */
+.footer {
+  border-top: 1px solid var(--line-soft);
+  padding: 2.5rem 0; color: var(--dim); font-size: 0.9rem;
+}
+.footer__inner { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
+.footer a { color: var(--muted); }
+.footer a:hover { color: var(--accent); }
+
+/* ---------- redirect page ---------- */
+.redirect { min-height: 100vh; display: grid; place-items: center; text-align: center; padding: 2rem; }
+.redirect__box { max-width: 34rem; }
+.redirect h1 { font-size: 1.5rem; margin: 0 0 0.75rem; letter-spacing: -0.02em; }
+.redirect p { color: var(--muted); margin: 0 0 1.5rem; }
+.redirect code { font-family: var(--mono); font-size: 0.85rem; color: var(--dim); }
+
+@media (max-width: 34rem) {
+  .nav__links { gap: 1rem; }
+  .hero { padding: 3.5rem 0 3rem; }
+}
