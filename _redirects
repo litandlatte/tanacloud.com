@@ -3,8 +3,11 @@
 # Cloudflare Pages reads this file. Unlike .htaccess it is a NORMAL filename,
 # so nothing can silently drop it on deploy.
 #
-# TO ADD A NEW SHORT LINK: add one line below. That is the whole job.
-#   /<slug>   <destination URL>   301
+# TO ADD A NEW SHORT LINK: add TWO lines below — with and without the
+# trailing slash. Cloudflare matches the path literally, so /h3 does NOT
+# also match /h3/, and a trailing slash would 404.
+#   /<slug>    <destination URL>   301
+#   /<slug>/   <destination URL>   301
 #
 # ⚠️ Do NOT also create a <slug>/index.html page. On Cloudflare Pages a real
 #    static file WINS over a redirect rule, so the page would shadow the 301
@@ -13,7 +16,8 @@
 # ---------------------------------------------------------------
 # SHORT LINKS  →  external destinations
 # ---------------------------------------------------------------
-/h3   https://tana.pub/6d5CCwsPxuD-/geospatial-data-science-with-ubers-h3   301
+/h3    https://tana.pub/6d5CCwsPxuD-/geospatial-data-science-with-ubers-h3   301
+/h3/   https://tana.pub/6d5CCwsPxuD-/geospatial-data-science-with-ubers-h3   301
 
 # ---------------------------------------------------------------
 # Keep repo housekeeping files out of the served site
