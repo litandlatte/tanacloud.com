@@ -3,23 +3,34 @@
 Rohit Kumar's data science site — talks, workshops, notebooks and notes.
 Plain static HTML/CSS/JS. No build step, no framework, no external requests.
 
-This folder maps 1:1 to Hostinger `public_html`.
+## Hosting
+
+Deployed on **Cloudflare Pages**, connected to this repo. Pushing to `main` deploys.
+`DEV` is the working branch; merge `DEV` → `main` to release.
+
+`.htaccess` is kept in the repo only so the site stays portable to Apache/LiteSpeed
+hosting (Hostinger). **Cloudflare Pages ignores it** — it reads `_redirects` and `_headers`.
 
 ## Short links
 
-`tanacloud.com/h3` → the H3 workshop slides. Each short link is implemented **twice**:
+`tanacloud.com/h3` → the H3 workshop slides.
 
-1. a `301` in `.htaccess` (the real redirect), and
-2. a fallback `<slug>/index.html` with meta-refresh + JS + canonical.
+**To add a short link, add one line to `_redirects`:**
 
-The fallback exists because **Hostinger's ZIP extractor silently skips dotfiles**, so
-`.htaccess` has a history of not landing on deploy. Create it by hand in File Manager
-every time, and verify by behaviour — a `403` on `/.htaccess` proves nothing on LiteSpeed.
+```
+/<slug>   <destination URL>   301
+```
 
-To add one: add a `RewriteRule` line, copy `h3/index.html` and swap the destination URLs,
-then add the entry to `hub.html`.
+That is the whole job. Then optionally add the entry to `hub.html` so it is listed.
+
+⚠️ **Do not also create a `<slug>/index.html` page.** On Cloudflare Pages a real static
+file takes precedence over a redirect rule, so the page would shadow the `301` and the
+short link would stop redirecting cleanly. (The old `h3/index.html` fallback existed only
+to survive Hostinger's ZIP extractor dropping dotfiles — `_redirects` is a normal filename,
+so that risk is gone.)
 
 ## Local preview
 
-Use **Apache**, not `python3 -m http.server` — the latter ignores `.htaccess` and therefore
-cannot show the redirects. See the project `CLAUDE.md` for the working macOS recipe.
+`python3 -m http.server` is fine for checking pages, but it does **not** apply `_redirects`,
+so it cannot show the short links working. To test redirects, use `npx wrangler pages dev .`
+or just verify on the Cloudflare preview deployment.

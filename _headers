@@ -1,0 +1,17 @@
+# tanacloud.com — response headers (Cloudflare Pages)
+# Replaces the mod_expires block from .htaccess.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# HTML short, so edits show up quickly
+/*.html
+  Cache-Control: public, max-age=600
+
+# Static assets long
+/css/*
+  Cache-Control: public, max-age=604800
+
+/js/*
+  Cache-Control: public, max-age=604800

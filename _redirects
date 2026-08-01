@@ -1,0 +1,22 @@
+# tanacloud.com — short links
+#
+# Cloudflare Pages reads this file. Unlike .htaccess it is a NORMAL filename,
+# so nothing can silently drop it on deploy.
+#
+# TO ADD A NEW SHORT LINK: add one line below. That is the whole job.
+#   /<slug>   <destination URL>   301
+#
+# ⚠️ Do NOT also create a <slug>/index.html page. On Cloudflare Pages a real
+#    static file WINS over a redirect rule, so the page would shadow the 301
+#    and the short link would stop redirecting properly.
+
+# ---------------------------------------------------------------
+# SHORT LINKS  →  external destinations
+# ---------------------------------------------------------------
+/h3   https://tana.pub/6d5CCwsPxuD-/geospatial-data-science-with-ubers-h3   301
+
+# ---------------------------------------------------------------
+# Keep repo housekeeping files out of the served site
+# ---------------------------------------------------------------
+/README.md    /   301
+/.gitignore   /   301
