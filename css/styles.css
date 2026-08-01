@@ -170,4 +170,6 @@ a:hover { text-decoration: underline; }
 @media (max-width: 34rem) {
   .nav__links { gap: 1rem; }
   .hero { padding: 3.5rem 0 3rem; }
+  /* "Artificial Intelligence" is long in monospace — keep it clear of the nav links */
+  .nav__brand { font-size: 0.82rem; }
 }
