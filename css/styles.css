@@ -12,6 +12,8 @@
   --dim:       #5f6b7c;
   --accent:    #4fd1c5;
   --accent-dim:#2a8a82;
+  --lock:      #f87171;
+  --lock-hi:   #fca5a5;
 
   --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -216,6 +218,6 @@ a:hover { text-decoration: underline; }
   border-color: var(--accent); font-weight: 500;
 }
 
-.lock { display: inline-flex; align-items: center; color: var(--dim); }
+.lock { display: inline-flex; align-items: center; color: var(--lock); }
 .lock svg { width: 0.95em; height: 0.95em; display: block; }
-.entry:hover .lock { color: var(--accent-dim); }
+.entry:hover .lock { color: var(--lock-hi); }
