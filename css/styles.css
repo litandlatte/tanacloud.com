@@ -173,3 +173,37 @@ a:hover { text-decoration: underline; }
   /* "Artificial Intelligence" is long in monospace — keep it clear of the nav links */
   .nav__brand { font-size: 0.82rem; }
 }
+
+/* ---------- hub: tag filters ---------- */
+[hidden] { display: none !important; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 1rem; }
+.filter {
+  font-family: var(--mono); font-size: 0.8rem; line-height: 1;
+  background: var(--bg-raised); color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 0.42rem 0.8rem; cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.filter:hover { color: var(--text); border-color: var(--accent-dim); }
+.filter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.filter[aria-pressed="true"] {
+  background: var(--accent); color: #07110f; border-color: var(--accent);
+}
+.filter-count {
+  font-family: var(--mono); font-size: 0.8rem; color: var(--dim);
+  margin: 0 0 1.75rem;
+}
+
+/* ---------- hub: per-card tags + lock ---------- */
+.entry__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.95rem; }
+.entry__tags span {
+  font-family: var(--mono); font-size: 0.74rem; color: var(--dim);
+  border: 1px solid var(--line-soft); border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+}
+.entry:hover .entry__tags span { border-color: var(--line); color: var(--muted); }
+
+.lock { display: inline-flex; align-items: center; color: var(--dim); }
+.lock svg { width: 0.95em; height: 0.95em; display: block; }
+.entry:hover .lock { color: var(--accent-dim); }
