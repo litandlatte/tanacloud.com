@@ -3,68 +3,83 @@
 # Cloudflare Pages reads this file. Unlike .htaccess it is a NORMAL filename,
 # so nothing can silently drop it on deploy.
 #
-# TO ADD A NEW SHORT LINK: add TWO lines below — with and without the
-# trailing slash. Cloudflare matches the path literally, so /h3 does NOT
-# also match /h3/, and a trailing slash would 404.
-#   /<slug>    <destination URL>   301
-#   /<slug>/   <destination URL>   301
+# CONVENTION (Rohit, 2026-08-02): the tanacloud.com path is the SAME slug Tana
+# publishes, so the short link and the destination always agree. To add a
+# session: take its tana.pub slug and give it TWO lines below — with and
+# without the trailing slash. Cloudflare matches the path LITERALLY, so /x does
+# NOT also match /x/, and it is case-sensitive too.
+#   /<tana-slug>    https://tana.pub/<nodeId>/<tana-slug>   301
+#   /<tana-slug>/   https://tana.pub/<nodeId>/<tana-slug>   301
 #
 # ⚠️ Do NOT also create a <slug>/index.html page. On Cloudflare Pages a real
-#    static file WINS over a redirect rule, so the page would shadow the 301
-#    and the short link would stop redirecting properly.
+#    static file WINS over a redirect rule, so the page would shadow the 301.
+#
+# 🔒 Every session except the H3 one is password-protected on tana.pub. The
+#    password is deliberately NOT in this repo — it is public on GitHub.
 
 # ---------------------------------------------------------------
-# SHORT LINKS  →  external destinations
+# SESSIONS  →  tana.pub
 # ---------------------------------------------------------------
+
+# Geospatial Data Science with Uber's H3
+/geospatial-data-science-with-ubers-h3    https://tana.pub/wqgY88cFfOJd/geospatial-data-science-with-ubers-h3   301
+/geospatial-data-science-with-ubers-h3/   https://tana.pub/wqgY88cFfOJd/geospatial-data-science-with-ubers-h3   301
+
+# Machine Learning Operations (MLOps)
+/machine-learning-operations-mlops    https://tana.pub/HpT0aLpzKJuf/machine-learning-operations-mlops   301
+/machine-learning-operations-mlops/   https://tana.pub/HpT0aLpzKJuf/machine-learning-operations-mlops   301
+
+# Automated Machine Learning (AutoML)
+/automated-machine-learning-automl    https://tana.pub/LzYn7mhFSyGN/automated-machine-learning-automl   301
+/automated-machine-learning-automl/   https://tana.pub/LzYn7mhFSyGN/automated-machine-learning-automl   301
+
+# Statistics
+/statistics-the-grammar-of-data-science    https://tana.pub/FCQ20RiyGLly/statistics-the-grammar-of-data-science   301
+/statistics-the-grammar-of-data-science/   https://tana.pub/FCQ20RiyGLly/statistics-the-grammar-of-data-science   301
+
+# The Myths of Data Science
+/the-myths-of-data-science-what-the-courses-dont-tell-you    https://tana.pub/JxLmyTahm_8v/the-myths-of-data-science-what-the-courses-dont-tell-you   301
+/the-myths-of-data-science-what-the-courses-dont-tell-you/   https://tana.pub/JxLmyTahm_8v/the-myths-of-data-science-what-the-courses-dont-tell-you   301
+
+# Machine Learning
+/machine-learning-from-data-to-decisions    https://tana.pub/xQrES1qWKJ7_/machine-learning-from-data-to-decisions   301
+/machine-learning-from-data-to-decisions/   https://tana.pub/xQrES1qWKJ7_/machine-learning-from-data-to-decisions   301
+
+# Predictive Analytics
+/predictive-analytics-turning-history-into-foresight    https://tana.pub/q0edpxa67Sub/predictive-analytics-turning-history-into-foresight   301
+/predictive-analytics-turning-history-into-foresight/   https://tana.pub/q0edpxa67Sub/predictive-analytics-turning-history-into-foresight   301
+
+# End-to-End Data Science
+/end-to-end-data-science-from-question-to-production    https://tana.pub/UHMCrSNrOMKN/end-to-end-data-science-from-question-to-production   301
+/end-to-end-data-science-from-question-to-production/   https://tana.pub/UHMCrSNrOMKN/end-to-end-data-science-from-question-to-production   301
+
+# Dashboarding
+/dashboarding-from-charts-to-decisions    https://tana.pub/ZcKgfaIYm9pa/dashboarding-from-charts-to-decisions   301
+/dashboarding-from-charts-to-decisions/   https://tana.pub/ZcKgfaIYm9pa/dashboarding-from-charts-to-decisions   301
+
+# Generative AI
+/generative-ai-beyond-the-prompt    https://tana.pub/mcrsh4Z5unlO/generative-ai-beyond-the-prompt   301
+/generative-ai-beyond-the-prompt/   https://tana.pub/mcrsh4Z5unlO/generative-ai-beyond-the-prompt   301
+
+# Agentic AI
+/agentic-ai-from-answering-to-doing    https://tana.pub/W6DNZShgEPr5/agentic-ai-from-answering-to-doing   301
+/agentic-ai-from-answering-to-doing/   https://tana.pub/W6DNZShgEPr5/agentic-ai-from-answering-to-doing   301
+
+# Azure Solutions Architect (AZ-305)
+/becoming-an-azure-solutions-architect-az-305    https://tana.pub/CJzTIb1Gvu9r/becoming-an-azure-solutions-architect-az-305   301
+/becoming-an-azure-solutions-architect-az-305/   https://tana.pub/CJzTIb1Gvu9r/becoming-an-azure-solutions-architect-az-305   301
+
+# AI and Humankind
+/ai-and-humankind-what-we-gain-what-we-risk    https://tana.pub/FBZCaxX6PnfY/ai-and-humankind-what-we-gain-what-we-risk   301
+/ai-and-humankind-what-we-gain-what-we-risk/   https://tana.pub/FBZCaxX6PnfY/ai-and-humankind-what-we-gain-what-we-risk   301
+
+# ---------------------------------------------------------------
+# LEGACY ALIAS — keep working, do not remove without checking
+# ---------------------------------------------------------------
+# /h3 pre-dates the slug convention and is already printed on the site's home
+# and hub pages, and may have been shared ahead of the 3 Aug session.
 /h3    https://tana.pub/wqgY88cFfOJd/geospatial-data-science-with-ubers-h3   301
 /h3/   https://tana.pub/wqgY88cFfOJd/geospatial-data-science-with-ubers-h3   301
-
-
-# --- session short links (added 2026-08-02) ---
-# ⚠️ Cloudflare matches the path LITERALLY: case-sensitive, and /x does not match /x/.
-#    Hence two lines per slug, and lowercase aliases for the two capitalised ones.
-
-/mlops    https://tana.pub/HpT0aLpzKJuf/machine-learning-operations-mlops   301
-/mlops/   https://tana.pub/HpT0aLpzKJuf/machine-learning-operations-mlops   301
-
-/automl    https://tana.pub/LzYn7mhFSyGN/automated-machine-learning-automl   301
-/automl/   https://tana.pub/LzYn7mhFSyGN/automated-machine-learning-automl   301
-
-/stats    https://tana.pub/FCQ20RiyGLly/statistics-the-grammar-of-data-science   301
-/stats/   https://tana.pub/FCQ20RiyGLly/statistics-the-grammar-of-data-science   301
-
-/myths-of-data-science    https://tana.pub/JxLmyTahm_8v/the-myths-of-data-science-what-the-courses-dont-tell-you   301
-/myths-of-data-science/   https://tana.pub/JxLmyTahm_8v/the-myths-of-data-science-what-the-courses-dont-tell-you   301
-
-/Machine-Learning    https://tana.pub/xQrES1qWKJ7_/machine-learning-from-data-to-decisions   301
-/Machine-Learning/   https://tana.pub/xQrES1qWKJ7_/machine-learning-from-data-to-decisions   301
-
-/machine-learning    https://tana.pub/xQrES1qWKJ7_/machine-learning-from-data-to-decisions   301
-/machine-learning/   https://tana.pub/xQrES1qWKJ7_/machine-learning-from-data-to-decisions   301
-
-/Predictive-Analytics    https://tana.pub/q0edpxa67Sub/predictive-analytics-turning-history-into-foresight   301
-/Predictive-Analytics/   https://tana.pub/q0edpxa67Sub/predictive-analytics-turning-history-into-foresight   301
-
-/predictive-analytics    https://tana.pub/q0edpxa67Sub/predictive-analytics-turning-history-into-foresight   301
-/predictive-analytics/   https://tana.pub/q0edpxa67Sub/predictive-analytics-turning-history-into-foresight   301
-
-/e2e-data-science    https://tana.pub/UHMCrSNrOMKN/end-to-end-data-science-from-question-to-production   301
-/e2e-data-science/   https://tana.pub/UHMCrSNrOMKN/end-to-end-data-science-from-question-to-production   301
-
-/dashboards    https://tana.pub/ZcKgfaIYm9pa/dashboarding-from-charts-to-decisions   301
-/dashboards/   https://tana.pub/ZcKgfaIYm9pa/dashboarding-from-charts-to-decisions   301
-
-/genai    https://tana.pub/mcrsh4Z5unlO/generative-ai-beyond-the-prompt   301
-/genai/   https://tana.pub/mcrsh4Z5unlO/generative-ai-beyond-the-prompt   301
-
-/agents    https://tana.pub/W6DNZShgEPr5/agentic-ai-from-answering-to-doing   301
-/agents/   https://tana.pub/W6DNZShgEPr5/agentic-ai-from-answering-to-doing   301
-
-/az305    https://tana.pub/CJzTIb1Gvu9r/becoming-an-azure-solutions-architect-az-305   301
-/az305/   https://tana.pub/CJzTIb1Gvu9r/becoming-an-azure-solutions-architect-az-305   301
-
-/impact    https://tana.pub/FBZCaxX6PnfY/ai-and-humankind-what-we-gain-what-we-risk   301
-/impact/   https://tana.pub/FBZCaxX6PnfY/ai-and-humankind-what-we-gain-what-we-risk   301
 
 # ---------------------------------------------------------------
 # Keep repo housekeeping files out of the served site
