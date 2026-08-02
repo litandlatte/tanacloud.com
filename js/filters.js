@@ -18,6 +18,12 @@
       });
       card.hidden = !match;
       if (match) shown++;
+
+      // highlight the selected tag(s) wherever they appear on this card
+      [].forEach.call(card.querySelectorAll('.chip'), function (chip) {
+        var isOn = active.indexOf(chip.getAttribute('data-t')) !== -1;
+        chip.classList.toggle('is-match', isOn);
+      });
     });
 
     buttons.forEach(function (b) {

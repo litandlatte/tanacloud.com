@@ -197,12 +197,24 @@ a:hover { text-decoration: underline; }
 
 /* ---------- hub: per-card tags + lock ---------- */
 .entry__tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.95rem; }
-.entry__tags span {
+.chip {
   font-family: var(--mono); font-size: 0.74rem; color: var(--dim);
   border: 1px solid var(--line-soft); border-radius: 4px;
   padding: 0.2rem 0.5rem;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
-.entry:hover .entry__tags span { border-color: var(--line); color: var(--muted); }
+.entry:hover .chip { border-color: var(--line); color: var(--muted); }
+
+/* the format tag (Workshop / Session / Talk) leads the row and reads differently */
+.chip--format { color: var(--muted); border-color: var(--line); letter-spacing: 0.04em; }
+.entry:hover .chip--format { color: var(--text); }
+
+/* a tag currently selected in the filter bar, wherever it appears on a card */
+.chip.is-match,
+.entry:hover .chip.is-match {
+  background: var(--accent); color: #07110f;
+  border-color: var(--accent); font-weight: 500;
+}
 
 .lock { display: inline-flex; align-items: center; color: var(--dim); }
 .lock svg { width: 0.95em; height: 0.95em; display: block; }
