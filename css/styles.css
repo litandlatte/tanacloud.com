@@ -218,6 +218,24 @@ a:hover { text-decoration: underline; }
   border-color: var(--accent); font-weight: 500;
 }
 
-.lock { display: inline-flex; align-items: center; color: var(--lock); }
+.lock { position: relative; display: inline-flex; align-items: center; color: var(--lock); }
+
+/* hover message on the padlock. Native title= was dropped: it lags ~1s, cannot be
+   styled, and would double up with this one. The full sentence also lives in
+   aria-label, so screen readers get it without needing hover. */
+.lock::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 0.55rem); left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: 15rem;
+  background: var(--bg-raised); color: var(--text);
+  border: 1px solid var(--line); border-radius: 6px;
+  padding: 0.5rem 0.68rem;
+  font-family: var(--sans); font-size: 0.78rem; line-height: 1.45;
+  font-weight: 400; letter-spacing: 0; text-transform: none; text-align: left;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  opacity: 0; visibility: hidden; transition: opacity 0.15s ease;
+  pointer-events: none; z-index: 30;
+}
+.lock:hover::after { opacity: 1; visibility: visible; }
 .lock svg { width: 1em; height: 1em; display: block; stroke-width: 2.4; }
 .entry:hover .lock { color: var(--lock-hi); }
