@@ -9,7 +9,10 @@
 /*.html
   Cache-Control: public, max-age=600
 
-# Static assets long
+# Static assets long — SAFE ONLY BECAUSE the HTML links them with a ?v= version
+# string (see index.html / hub.html). Bump that version on every CSS/JS change or
+# returning visitors keep the old file for a week. This bit once: a lock-icon
+# colour change looked like it had not deployed, and the cache was the reason.
 /css/*
   Cache-Control: public, max-age=604800
 
