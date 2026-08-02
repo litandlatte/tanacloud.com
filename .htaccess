@@ -14,7 +14,7 @@
   # Add one line per new short link, then also create <slug>/index.html
   # as a fallback in case this file goes missing on a deploy.
   # ---------------------------------------------------------------
-  RewriteRule ^h3/?$ https://tana.pub/6d5CCwsPxuD-/geospatial-data-science-with-ubers-h3 [R=301,L,NE]
+  RewriteRule ^h3/?$ https://tana.pub/wqgY88cFfOJd/geospatial-data-science-with-ubers-h3 [R=301,L,NE]
 
   # ---------------------------------------------------------------
   # Canonical host: www → non-www (straight to https, so it is one hop)
