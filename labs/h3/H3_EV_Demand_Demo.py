@@ -26,7 +26,7 @@ Requires: pip install h3 folium pandas numpy scikit-learn
 # first; every later cell depends on the ones above it.
 #
 # - **Runtime:** the whole notebook computes in well under a minute. The two slow parts are not
-#   computation — they are the `pip install` at the top and a **~9.5 MB data download** in §2.1.
+#   computation — they are the `pip install` at the top and a **~9.9 MB data download** in §2.1.
 # - **Data:** four CSVs are pulled straight from GitHub. Nothing is stored locally and nothing
 #   needs uploading.
 # - **Everything is deterministic** (`SEED = 7` in the generator, `random_state=7` in the models),
@@ -415,7 +415,7 @@ m
 # ==============================================================================
 # WHAT  Downloads the four CSVs straight from GitHub and splits the stations
 #       into ABC's own and the competitors'.
-# WHY   This is the only network fetch in Section 2. ev_pings.csv is ~9.5 MB,
+# WHY   This is the only network fetch in Section 2. ev_pings.csv is ~9.9 MB,
 #       so it is the slowest cell here - expect a few seconds.
 # OUT   Row counts for each file, then three sample session rows. Note that
 #       sessions exist for ABC stations only - that asymmetry is the problem.

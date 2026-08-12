@@ -230,9 +230,25 @@ last one. Within that slot:
 | 14–17 | The two models, and why not a threshold | §2.7 |
 | 17–20 | Score the competitors, cost at scale, the map | §2.8–2.11 |
 
-**Runtime is not the constraint** — the notebook computes in well under a minute end to end. The
-two things that actually take time are the `pip install` at the top and the ~9.9 MB data download
-in §2.1. Run the install cell before the audience is watching.
+**Runtime is not the constraint.** Measured on Google Colab (free tier, Run all from a cold
+runtime): **43 s of cell execution, ~56 s wall including runtime connect, 0 errors.** Only four
+cells cost anything at all:
+
+| Cell | Colab |
+|---|---:|
+| `pip install h3 folium scikit-learn` | **10 s** |
+| §2.7 the 10-split check | **18 s** |
+| §2.7 the two models | 8 s |
+| §2.1 data download (9.9 MB) | 3 s |
+| *every other cell* | <1 s |
+
+So the 20 minutes is entirely yours to narrate in. **Run the install cell before the audience is
+watching**, and skip the 10-split cell live if you are tight — its result is quoted above.
+
+> Pair counts came back **identical** on Colab (1,927,120 / 5,027, 100% recall both). The PR-AUC
+> gap was 0.0263 ± 0.0126 there against 0.0264 ± 0.0120 locally — same conclusion, but it confirms
+> why the deck quotes **pair counts, not model decimals**: the counts are arithmetic and travel;
+> floating-point model scores wobble in the 4th decimal across hardware.
 
 ---
 

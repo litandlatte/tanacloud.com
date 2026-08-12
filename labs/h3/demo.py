@@ -65,7 +65,7 @@ import pandas as pd
 # ==============================================================================
 # WHAT  Downloads the four CSVs straight from GitHub and splits the stations
 #       into ABC's own and the competitors'.
-# WHY   This is the only network fetch in Section 2. ev_pings.csv is ~9.5 MB,
+# WHY   This is the only network fetch in Section 2. ev_pings.csv is ~9.9 MB,
 #       so it is the slowest cell here - expect a few seconds.
 # OUT   Row counts for each file, then three sample session rows. Note that
 #       sessions exist for ABC stations only - that asymmetry is the problem.
