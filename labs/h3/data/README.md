@@ -1,6 +1,6 @@
 # Data — EV charging detection demo
 
-Three CSVs driving the H3 hands-on lab, plus 200-row samples for showing on screen.
+Four CSVs driving the H3 hands-on lab, plus 200-row samples for showing on screen.
 
 > ## ⚠️ All of this data is synthetic
 >
@@ -14,20 +14,26 @@ Three CSVs driving the H3 hands-on lab, plus 200-row samples for showing on scre
 
 | File | Rows | Size | Grain |
 |---|---:|---:|---|
-| `ev_pings.csv` | 161,096 | ~11 MB | one telematics ping |
-| `ev_stations.csv` | 330 | ~25 KB | one charging station |
-| `ev_charging_sessions.csv` | 991 | ~80 KB | one charging session (**ABC's own stations only**) |
+| `ev_pings.csv` | 145,729 | 9.9 MB | one telematics ping |
+| `ev_vehicles.csv` | 3,000 | 0.1 MB | one vehicle (**fleet master**) |
+| `ev_stations.csv` | 330 | 25 KB | one charging station |
+| `ev_charging_sessions.csv` | 968 | 80 KB | one charging session (**ABC's own stations only**) |
 | `*_sample.csv` | 200 each | small | first 200 rows, so GitHub renders them in the browser |
 
-The sample files exist because **GitHub will not preview an 11 MB CSV** — it stops rendering long
+The sample files exist because **GitHub will not preview a 9.9 MB CSV** — it stops rendering long
 before that. Use the samples to *show* the data and the full files to *run* it.
 
 ---
 
 ## `ev_pings.csv`
 
-Telematics from 3,000 vehicles over one week (Mon 8 – Sun 14 June 2026), reported about every
-12 minutes.
+Telematics from 3,000 vehicles across **one day — Monday 8 June 2026, 00:00 to 19:03 UTC** —
+reported about every 12 minutes (≈49 pings per vehicle).
+
+> **On the time span.** Each vehicle is walked through 6–10 stops, and that walk lands inside a
+> single day. Earlier versions of this document described a full week; the data has never covered
+> one. Everything downstream is therefore a **daily** rate — the lab's `stops/day` and
+> `sessions/day` labels are correct as written.
 
 **These are real trajectories, not scattered points.** Pings are ordered per vehicle and alternate
 between driving and stopping, so a run of consecutive low-speed pings in one place *is* a stop.
@@ -37,11 +43,11 @@ That run is the grain the lab works at.
 |---|---|---|---|
 | `ping_id` | integer | — | Surrogate key |
 | `vehicle_id` | string | `EV000000` | 3,000 distinct vehicles |
-| `ts_utc` | timestamp | ISO 8601, UTC | 2026-06-08 → 2026-06-14 |
+| `ts_utc` | timestamp | ISO 8601, UTC | 2026-06-08 00:00 → 2026-06-08 19:03 |
 | `lat` | float | degrees, WGS84 | 5 dp (~1 m) |
 | `lon` | float | degrees, WGS84 | 5 dp |
 | `speed_kmh` | float | km/h | **≤ 5.0 counts as parked** |
-| `heading_deg` | float **or empty** | degrees, 0–360 | **Empty for ~14% of pings** |
+| `heading_deg` | float **or empty** | degrees, 0–360 | **Empty for 13.4% of pings** |
 | `soc_pct` | float | percent | State of charge; rises while charging, falls while driving |
 
 **On `heading_deg` being empty.** That gap is deliberate and realistic: GPS heading is derived from
@@ -52,6 +58,22 @@ raw value to a gradient-boosting classifier, which handles NaN natively.
 Note also that heading must be averaged as a **direction**, not a number: the mean of 350° and 10°
 is 0°, not 180°. The lab averages the sine and cosine.
 
+## `ev_vehicles.csv` — the fleet master
+
+| Column | Type | Notes |
+|---|---|---|
+| `vehicle_id` | string | Joins to `ev_pings.csv` |
+| `make`, `model` | string | Invented model names |
+| `engine_type` | string | **2,598 BEV, 402 PHEV** |
+| `battery_kwh` | integer | 9–105; PHEVs at the low end |
+| `max_charge_kw` | integer | 4–250, the car's own ceiling |
+| `model_year` | integer | 2019–2026 |
+
+**This file matters more than it looks.** Charging time is physics — *energy needed ÷ the slower of
+the car's rate and the station's* — so a 105 kWh car gaining 40% sits far longer than a 9 kWh PHEV
+doing the same. Without knowing the car, a long dwell is ambiguous, which is exactly why
+`battery_kwh`, `max_charge_kw` and `is_bev` are features.
+
 ## `ev_stations.csv`
 
 | Column | Type | Notes |
@@ -60,8 +82,8 @@ is 0°, not 180°. The lab averages the sine and cosine.
 | `operator` | string | `ABC Corp`, or one of five **fictional** competitor brands |
 | `is_abc` | boolean | **The ownership indicator** |
 | `lat`, `lon` | float | degrees, WGS84, 5 dp |
-| `country` | string | ISO 3166-1 alpha-2, 20 countries |
-| `city` | string | Nearest seed city |
+| `country` | string | ISO 3166-1 alpha-2, 21 countries |
+| `city` | string | Nearest seed city (48 cities) |
 | `n_chargers` | integer | 2, 4, 6, 8 or 12 |
 | `max_power_kw` | integer | 50 (AC), 150 (DC fast), 350 (ultra-fast) |
 | `bay_bearing_deg` | integer | Which way a car faces when plugged in |
@@ -94,7 +116,7 @@ ABC Corp's internal billing records.
 
 | | Stations | Sessions recorded |
 |---|---:|---|
-| ABC Corp | 80 | 991 |
+| ABC Corp | 80 | 968 |
 | Competitors | 250 | **none, ever** |
 
 That asymmetry is the entire business case. ABC can measure its own network exactly and has **no
@@ -114,42 +136,50 @@ A session must claim **exactly one** stop: the one it overlaps most in time. Let
 match several nearby stops of the same vehicle silently manufactures false positives, and the
 damage is invisible until you measure the distance from each "charging" stop to its own station.
 
-Built correctly, that distance is **median 17 m, 99th percentile 223 m, max 461 m**. An early
-version of this dataset had a 90th percentile of **10.8 km** because of exactly this bug.
+Built correctly, that distance is **median 18 m, 99th percentile 255 m, max 457 m** — all 968
+sessions resolve to 968 distinct stops. An early version of this dataset had "charging" stops
+**10.8 km** from the charger because of exactly this bug.
 
 ## Difficulty
 
 Tuned so no single feature is sufficient. Measured on a held-out-by-vehicle split, PR-AUC from
-each feature alone:
+each feature alone (the figures below are the H3 model's feature set, and are what the lab prints
+in §2.7):
 
 | Feature | PR-AUC alone |
 |---|---:|
-| `dist_m` | 0.618 |
-| `soc_delta` | 0.457 |
-| `align` | 0.344 |
-| `n_pings` / `dwell_min` | 0.274 |
-| `max_power_kw` | 0.218 |
-| `hour` | 0.198 |
-| **all combined** | **0.991** |
+| `soc_delta` | 0.470 |
+| `ring_dist` | 0.443 |
+| `dwell_min` / `n_pings` | 0.375 |
+| `align` | 0.281 |
+| `station_kw` | 0.203 |
+| `is_bev` | 0.199 |
+| `hour` | 0.192 |
+| `battery_kwh` / `max_charge_kw` | 0.182 |
+| **all combined** | **0.960** |
 
-Distance is the strongest single signal and nowhere near enough on its own. That gap is the point:
-it is what makes this a modelling problem rather than a threshold.
+**The strongest single feature is not the spatial one.** *The battery filled up* (`soc_delta`,
+0.470) narrowly beats *the car was near a charger* (`ring_dist`, 0.443), and both are far below
+the 0.960 the combination reaches. That gap is the point: it is what makes this a modelling
+problem rather than a threshold.
 
 ## Reproducing
 
 ```bash
 pip install numpy pandas
-python make_data.py .          # rewrites all seven files
+python make_data.py .          # rewrites all eight CSVs
 ```
 
-Seeded (`SEED = 7`) and deterministic: same seed, same bytes. Change it and every figure in the
-lab moves.
+Seeded (`SEED = 7`) and deterministic. **Verified:** regenerating from a clean directory
+reproduces all four data files **byte for byte**. Change the seed and every figure in the lab
+moves.
 
 ## Reading it
 
 ```python
 DATA = "https://raw.githubusercontent.com/litandlatte/tanacloud.com/H3/labs/h3/data/"
 pings    = pd.read_csv(DATA + "ev_pings.csv", parse_dates=["ts_utc"])
+vehicles = pd.read_csv(DATA + "ev_vehicles.csv")
 stations = pd.read_csv(DATA + "ev_stations.csv")
 sessions = pd.read_csv(DATA + "ev_charging_sessions.csv",
                        parse_dates=["start_utc", "end_utc"])

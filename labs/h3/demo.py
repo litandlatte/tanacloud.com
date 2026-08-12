@@ -60,6 +60,16 @@ import pandas as pd
 # > ⚠️ Every row is synthetic. Real city coordinates, invented everything else — see `data/README.md`.
 
 # %%
+# ==============================================================================
+# 2.1 - load the four files
+# ==============================================================================
+# WHAT  Downloads the four CSVs straight from GitHub and splits the stations
+#       into ABC's own and the competitors'.
+# WHY   This is the only network fetch in Section 2. ev_pings.csv is ~9.5 MB,
+#       so it is the slowest cell here - expect a few seconds.
+# OUT   Row counts for each file, then three sample session rows. Note that
+#       sessions exist for ABC stations only - that asymmetry is the problem.
+
 DATA = "https://raw.githubusercontent.com/litandlatte/tanacloud.com/H3/labs/h3/data/"
 
 pings    = pd.read_csv(DATA + "ev_pings.csv", parse_dates=["ts_utc"])
@@ -96,6 +106,16 @@ print("\n...and nothing at all about the other 250 stations.")
 # **how long it lasted**, **how much charge it gained**, and **which way the car was facing.**
 
 # %%
+# ==============================================================================
+# 2.2 - collapse pings into stops
+# ==============================================================================
+# WHAT  Groups consecutive parked pings (<= 5 km/h) of the same vehicle into
+#       a single stop, and derives dwell time, SoC gained and mean heading.
+# WHY   A ping is not an event; a stop is. This cell creates the grain the
+#       rest of the lab works at. Headings are averaged as directions via
+#       sine/cosine - the mean of 350 and 10 degrees is 0, not 180.
+# OUT   145,729 pings -> 24,089 stops, then the first five.
+
 LOW_SPEED_KMH = 5.0     # <= this is "parked"
 GAP_MIN       = 30      # a longer silence starts a new stop
 JUMP_KM       = 0.2     # so does moving more than 200 m
@@ -155,6 +175,18 @@ stops[["stop_id", "vehicle_id", "lat", "lon", "n_pings", "dwell_min", "soc_delta
 # until you plot the distances and find "charging" stops kilometres from the charger.
 
 # %%
+# ==============================================================================
+# 2.3 - attach the labels, and check them
+# ==============================================================================
+# WHAT  Matches each ABC charging session to the single stop it overlaps most
+#       in time, then measures how far each 'charging' stop is from its own
+#       station.
+# WHY   The one-to-one rule is load-bearing. Letting one session claim several
+#       nearby stops manufactures false positives silently - an early version
+#       produced 'charging' stops 10.8 km from the charger.
+# OUT   968 labelled pairs, and a sanity line reading median ~18 m,
+#       max ~457 m. If that max is ever in kilometres, the matching broke.
+
 m = sessions.merge(stops[["stop_id", "vehicle_id", "start", "end"]], on="vehicle_id")
 
 # Overlap in minutes between the session window and the stop window.
@@ -200,6 +232,17 @@ print(f"\nlabel sanity - distance from stop to its own station: "
 # signal out of H3 you need **finer cells and a wider ring**.
 
 # %%
+# ==============================================================================
+# 2.4 - search resolution x ring width against ground truth
+# ==============================================================================
+# WHAT  For resolutions 8-12 and k = 1-4, measures what fraction of known
+#       charging pairs fall within k rings, and how many distinct ring values
+#       that produces.
+# WHY   Turns the resolution choice from a guess into a measurement. Only
+#       possible because ABC's session records say which pairs were real.
+# OUT   A 20-row grid. Two columns matter: recall (did we keep the needles)
+#       and ring_levels (is the feature graded or just yes/no).
+
 res_rows = []
 for res in range(8, 13):
     stop_cell = [h3.latlng_to_cell(a, b, res) for a, b in zip(chk.lat_stop, chk.lon_stop)]
@@ -220,15 +263,14 @@ grid.style.format({"edge_m": "{:,.1f}", "reach_m": "{:,.0f}", "recall": "{:.1%}"
     .hide(axis="index")
 
 # %% [markdown]
-# **Read the `within_k1` column.** Down to res 9 it stays essentially perfect, then starts to
-# fall away: by res 11 a car and its charger are in the same neighbourhood of cells only ~93% of the
-# time, and by res 12 barely two thirds.
+# **Read the `recall` column first.** It answers the blunt question: if we only ever look
+# inside a station's own cell plus `k` rings, what fraction of the *known* charging pairs do we
+# still find? Anything under 100% means the index is silently throwing away real sessions before
+# the model ever gets to see them — and no amount of speed makes that a good trade.
 #
-# **We take res 9 with `k = 1`** — cells ~200 m on a side, a catchment of one cell plus its six
-# neighbours. Fine enough to be a tiny haystack, coarse enough to keep essentially every needle.
-#
-# That number was **measured, not assumed** — and the measurement is only possible because ABC's
-# session records told us which pairs were real.
+# But recall alone does not settle it. The same 100% can be bought two ways: a **coarse cell with
+# a tight ring**, or a **fine cell with a wider one**. Those are not equivalent, and the difference
+# is invisible in the `recall` column. The next cell is where it shows up.
 
 # %% [markdown]
 # **Read `ring_levels` next to `recall`.**
@@ -243,6 +285,16 @@ grid.style.format({"edge_m": "{:,.1f}", "reach_m": "{:,.0f}", "recall": "{:.1%}"
 # difference in model quality would be unattributable.
 
 # %%
+# ==============================================================================
+# 2.4 - lock in the chosen parameters
+# ==============================================================================
+# WHAT  Fixes res 10 / k=4 for the H3 path and a 500 m radius for haversine,
+#       and prints the resulting reach so the two can be compared.
+# WHY   The reaches are deliberately matched (~526 m vs 500 m). If the H3
+#       path also changed the search radius, any difference in model quality
+#       afterwards would be unattributable.
+# OUT   The two configurations, side by side, with 61 cells per station.
+
 BLOCK_RES  = 10     # chosen from the grid above
 BLOCK_K    = 4      # a cell plus 4 rings -> grid_distance in 0..4
 MAX_DIST_M = 500    # the equivalent radius for the haversine approach
@@ -267,6 +319,15 @@ print("approaches is HOW the pairs are found, and what the model is told about p
 # to be thrown away.**
 
 # %%
+# ==============================================================================
+# 2.5 - approach A: the haversine cross join
+# ==============================================================================
+# WHAT  Pairs every stop with every ABC station, computes all the distances
+#       in one vectorised numpy call, and keeps those under 500 m.
+# WHY   The baseline, and the thing that stops scaling. Watch the pair count,
+#       not the clock.
+# OUT   1,927,120 pairs evaluated, ~5,018 kept - about 0.26% of the work.
+
 t0 = time.perf_counter()
 
 stop_lat = stops.lat.to_numpy(); stop_lon = stops.lon.to_numpy()
@@ -304,6 +365,17 @@ print(f"wall clock      : {time_hav:.3f} s")
 # created.**
 
 # %%
+# ==============================================================================
+# 2.6 - approach B: H3 as blocking key AND distance
+# ==============================================================================
+# WHAT  Indexes each station into its cell plus 4 rings, then looks each stop
+#       up in that dictionary and records how many rings apart they are.
+# WHY   Two things happen at once: candidates come from a hash lookup instead
+#       of a scan, and grid_distance replaces metres entirely. No sin, no cos,
+#       no sqrt runs in this path at all.
+# OUT   5,027 pairs materialised against haversine's 1,927,120 - 383x fewer,
+#       then the spread of ring distances across candidates.
+
 t0 = time.perf_counter()
 
 # Index the stations once: each claims its cell and every cell within BLOCK_K rings.
@@ -346,6 +418,15 @@ print(cand_h3.ring_dist.value_counts().sort_index().to_string())
 # Of the labelled charging pairs, how many survive each approach?
 
 # %%
+# ==============================================================================
+# 2.6 - blocking recall: what did the shortcut cost?
+# ==============================================================================
+# WHAT  Measures what fraction of the known charging pairs survived each
+#       approach's filter.
+# WHY   The number people skip. A filter that is fast because it quietly drops
+#       real matches is a bug, not an optimisation. Always report this.
+# OUT   100.00% for both. H3 kept every needle from a 383x smaller haystack.
+
 def recall_of(cand):
     got = set(zip(cand.stop_id, cand.station_id))
     return len(truth & got) / len(truth)
@@ -384,6 +465,18 @@ else:
 # train/test boundary leaks.
 
 # %%
+# ==============================================================================
+# 2.7 - features, and the two models
+# ==============================================================================
+# WHAT  Builds the shared feature set, then fits the same classifier twice:
+#       once with dist_m in metres, once with ring_dist in rings.
+# WHY   Everything except the spatial feature is identical, so the comparison
+#       isolates exactly one thing - how the model is told where the car was.
+#       The split is BY VEHICLE: one car makes many stops, and letting them
+#       straddle train/test leaks.
+# OUT   PR-AUC ~0.978 for metres, ~0.960 for rings - so rings cost about
+#       0.018 - then a full classification report for the H3 model.
+
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.metrics import average_precision_score, roc_auc_score, classification_report
@@ -436,12 +529,82 @@ print(classification_report(Bm["te"].y, Bm["proba"] >= 0.5,
                             target_names=["not charging", "charging"], digits=3))
 
 # %% [markdown]
+# ### Is that 0.018 gap real, or just this one split?
+#
+# A single train/test split puts ~300 charging stops in the test set. A difference of 0.018 PR-AUC
+# measured on that is not obviously bigger than the noise, and the honest thing is to check rather
+# than assert.
+#
+# So refit **both models across 10 different vehicle splits** and look at the spread of the gap.
+
+# %%
+# ==============================================================================
+# 2.7 - is the gap real? repeat both models across 10 splits
+# ==============================================================================
+# WHAT  Refits model A (metres) and model B (rings) on 10 different train/test
+#       splits and reports the mean gap with its spread.
+# WHY   The headline 0.018 comes from one split with ~300 positives. If the
+#       spread straddles zero, the honest claim is "no measurable difference",
+#       not "rings cost 0.018". This cell decides which sentence is true.
+# OUT   Per-split PR-AUC for both, then mean +/- std of the gap and a verdict.
+#       Takes ~30-45 s - the one slow cell in the notebook. Safe to skip live;
+#       the result is quoted in the markdown below.
+
+gaps, rows_ab = [], []
+for seed in range(10):
+    tr_ix, te_ix = next(GroupShuffleSplit(n_splits=1, test_size=0.30, random_state=seed)
+                        .split(A["data"], groups=A["data"].vehicle_id))
+    a_tr, a_te = A["data"].iloc[tr_ix], A["data"].iloc[te_ix]
+    ma = HistGradientBoostingClassifier(max_iter=250, random_state=7).fit(a_tr[A["feats"]], a_tr.y)
+    ap_a = average_precision_score(a_te.y, ma.predict_proba(a_te[A["feats"]])[:, 1])
+
+    tr_ix, te_ix = next(GroupShuffleSplit(n_splits=1, test_size=0.30, random_state=seed)
+                        .split(Bm["data"], groups=Bm["data"].vehicle_id))
+    b_tr, b_te = Bm["data"].iloc[tr_ix], Bm["data"].iloc[te_ix]
+    mb = HistGradientBoostingClassifier(max_iter=250, random_state=7).fit(b_tr[Bm["feats"]], b_tr.y)
+    ap_b = average_precision_score(b_te.y, mb.predict_proba(b_te[Bm["feats"]])[:, 1])
+
+    gaps.append(ap_a - ap_b)
+    rows_ab.append((seed, ap_a, ap_b, ap_a - ap_b))
+
+print(f"{'split':>6}{'A metres':>12}{'B rings':>11}{'gap':>10}")
+print("-" * 39)
+for s, a_, b_, g in rows_ab:
+    print(f"{s:>6}{a_:>12.4f}{b_:>11.4f}{g:>+10.4f}")
+print("-" * 39)
+
+g = np.array(gaps)
+lo, hi = g.mean() - 1.96 * g.std(ddof=1), g.mean() + 1.96 * g.std(ddof=1)
+print(f"{'mean':>6}{np.mean([r[1] for r in rows_ab]):>12.4f}"
+      f"{np.mean([r[2] for r in rows_ab]):>11.4f}{g.mean():>+10.4f}")
+print(f"\nGap: {g.mean():+.4f} +/- {g.std(ddof=1):.4f} (1 sd)   95% interval "
+      f"[{lo:+.4f}, {hi:+.4f}]")
+print(f"A beat B on {int((g > 0).sum())} of {len(g)} splits.")
+print()
+if lo > 0:
+    print("The interval excludes zero: metres really are better than rings, and the")
+    print(f"cost of dropping distance is about {g.mean():.3f} PR-AUC. That is the number to quote.")
+else:
+    print("The interval INCLUDES zero. On this data the honest claim is that rings cost")
+    print("no measurable accuracy - not that they cost 0.018. Quote the pair counts instead.")
+
+# %% [markdown]
 # ### "Why not just use a distance threshold?"
 #
 # The fairest challenge in the room, and worth answering with a number rather than an opinion.
 # Here is what each feature achieves **on its own**:
 
 # %%
+# ==============================================================================
+# 2.7 - what each feature is worth on its own
+# ==============================================================================
+# WHAT  Refits the classifier on each feature individually and scores it,
+#       then compares against all of them together.
+# WHY   Answers 'why not just use a distance threshold?' with a measurement
+#       instead of an opinion.
+# OUT   A sorted bar chart. The top single feature reaches ~0.47; the
+#       combination reaches ~0.96.
+
 tr, te, feats = Bm["tr"], Bm["te"], Bm["feats"]
 solo = []
 for f in feats:
@@ -454,13 +617,20 @@ for f, s in solo_df.itertuples(index=False):
     print(f"  {f:<14} {s:.3f}  {'#' * int(s * 50)}")
 
 # %% [markdown]
-# **Distance alone is the best single feature and it is not close to sufficient.** The lift comes
-# from combining *where* the car was with *how long it stayed*, *whether the battery filled* and
-# *which way it faced* — and no single threshold expresses that.
+# **No single feature is close to sufficient — and the strongest one is not even the spatial
+# one.** `soc_delta` (~0.47) edges out `ring_dist` (~0.44): on its own, *the battery filled up*
+# carries slightly more signal than *the car was near a charger*. Both sit far below the ~0.96 the
+# combination reaches.
 #
-# Note also what the confusers did: a car charging at a **competitor station 200 m away** has a
-# rising SoC, a long dwell and a bay-aligned heading. Only the geometry separates it. And a car on a
-# home charger has the SoC rise with no station at all. **Neither signal alone is safe.**
+# That is the answer to the challenge, and it is stronger than the expected one. A distance
+# threshold is not a blunter version of this model — it is a different and much worse one, because
+# the thing that actually separates charging from parking is **where the car was AND how long it
+# stayed AND whether the battery filled AND which way it faced**, together.
+#
+# Note what the confusers do to any single-signal rule. A car charging at a **competitor station
+# 200 m away** has a rising SoC, a long dwell and a bay-aligned heading — only the geometry
+# separates it from an ABC charge. And a car on a **home charger** shows the SoC rise with no
+# station at all. **Neither signal alone is safe.**
 
 # %% [markdown]
 # ## 2.8 Inference — now score the competitors
@@ -472,6 +642,16 @@ for f, s in solo_df.itertuples(index=False):
 # This is the number ABC could never buy: **how busy is my competitor's site?**
 
 # %%
+# ==============================================================================
+# 2.8 - inference across all 330 stations
+# ==============================================================================
+# WHAT  Rebuilds the H3 index over every station (not just ABC's), scores
+#       every stop-station pair it produces, and reports the size of the job.
+# WHY   This is the payoff: the model has only ever seen ABC's sites, and is
+#       now pointed at the 250 it knows nothing about.
+# OUT   7,949,370 pairs in a full cross join versus 18,718 actually scored -
+#       425x smaller.
+
 t0 = time.perf_counter()
 
 # Same H3 index, now over every station rather than only ABC's.
@@ -500,6 +680,18 @@ print(f"H3 actually scored              : {len(X):,} pairs   in {time_infer:.1f}
 print(f"                                  ({full_cross_join / len(X):,.0f}x smaller)")
 
 # %%
+# ==============================================================================
+# 2.8 - the credibility check, then the answer
+# ==============================================================================
+# WHAT  Counts confident predictions per station, validates them against real
+#       session counts at ABC's own sites using HELD-OUT vehicles only, then
+#       lists the busiest competitor stations.
+# WHY   The held-out restriction is what makes the check honest. Scoring every
+#       stop includes vehicles the model trained on and inflates the
+#       correlation to ~0.998, which proves nothing.
+# OUT   Correlation ~0.904 (278 predicted vs 296 actual), then the top 10
+#       competitor sites by predicted daily sessions.
+
 THRESHOLD = 0.5
 hits = X[X.p_charging >= THRESHOLD]
 demand = (hits.groupby("station_id").size().rename("predicted_sessions").reset_index()
@@ -531,7 +723,7 @@ top = (demand[~demand.is_abc]
        [["station_id", "operator", "city", "country", "n_chargers",
          "max_power_kw", "predicted_sessions"]])
 print("Busiest COMPETITOR stations - demand ABC has never been able to see:")
-print(top.reset_index(drop=True).to_string(index=False))
+top.reset_index(drop=True)
 
 # %% [markdown]
 # ## 2.9 What this costs at ABC's real scale
@@ -555,6 +747,17 @@ print(top.reset_index(drop=True).to_string(index=False))
 # > on that assumption.
 
 # %%
+# ==============================================================================
+# 2.9 - what this costs at production scale
+# ==============================================================================
+# WHAT  Extrapolates both approaches to 2M vehicles and 50,000 stations and
+#       prices them: pairs, intermediate data volume, core-hours, euros.
+# WHY   Leadership does not ask how many seconds. Note the honest caveat in
+#       the markdown above: both paths are priced at a COMMON per-pair rate,
+#       because in production both are the same primitive.
+# OUT   9.6 TB of intermediate data versus 2.3 GB. The euros are small either
+#       way - the point is 'infrastructure project' versus 'script'.
+
 # --- assumptions, all adjustable -----------------------------------------------------
 PROD_VEHICLES   = 2_000_000     # ABC's addressable fleet
 PROD_STATIONS   = 50_000        # public charging sites across Europe
@@ -583,7 +786,7 @@ def row(label, pairs):
           f"{hrs:>13,.2f}{hrs*CORE_RATE_EUR:>13,.3f}")
 
 
-print(f"Assumed production scale: {PROD_VEHICLES:,} vehicles -> {prod_stops:,.0f} stops/week "
+print(f"Assumed production scale: {PROD_VEHICLES:,} vehicles -> {prod_stops:,.0f} stops/day "
       f"against {PROD_STATIONS:,} stations\n")
 print(f"{'':20}{'pairs':>19}{'intermediate':>16}{'core-hours':>13}{'EUR/run':>13}")
 print("-" * 81)
@@ -603,7 +806,19 @@ print("side is a few gigabytes - a job that fits on one machine.")
 print()
 print("The difference is not 'slow versus fast'. It is 'infrastructure project' versus 'script'.")
 
+# %% [markdown]
+# ## 2.10 Scoreboard
+
 # %%
+# ==============================================================================
+# 2.10 - the scoreboard
+# ==============================================================================
+# WHAT  Prints every headline number from the run in one table.
+# WHY   The slide-worthy summary, generated from the actual run rather than
+#       typed from memory.
+# OUT   Pair counts, recall, PR-AUC for both approaches, and the closing
+#       line: H3 did not make the distance calculation faster, it removed it.
+
 print("=" * 78)
 print("SCOREBOARD".center(78))
 print("=" * 78)
@@ -634,3 +849,4 @@ print("It removed the distance calculation.")
 #
 # ABC's own stations in blue; the competitor sites we now estimate to be busiest in red, sized by
 # predicted sessions. Every red circle is demand that was invisible an hour ago.
+

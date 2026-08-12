@@ -1,7 +1,7 @@
 {
   "profile": "tabular-data-package",
   "name": "ev-charging-detection-h3-demo",
-  "title": "EV charging detection \u2014 synthetic dataset for the H3 hands-on lab",
+  "title": "EV charging detection — synthetic dataset for the H3 hands-on lab",
   "description": "Synthetic European EV telematics, charging stations and ABC Corp's internal charging sessions. Used to demonstrate H3 as a blocking key for a stop-to-station cross join, against a haversine baseline. ABC Corp, its competitors, all vehicles, headings and sessions are invented; only the city coordinates the data is seeded around are real.",
   "licenses": [
     {
@@ -34,8 +34,8 @@
       "format": "csv",
       "mediatype": "text/csv",
       "encoding": "utf-8",
-      "bytes": 10955833,
-      "hash": "sha256:68de385d2ed40bdcead284f10f8c01611443285045c2a39fe6912cd5b4c583b1",
+      "bytes": 9914738,
+      "hash": "sha256:e7d2cbc0b799a5ff1855557fd65346b60c9ba04aac287a393007baf4569bbba1",
       "description": "One row per telematics ping. Pings are ordered per vehicle and form real trajectories: runs of consecutive low-speed pings are stops, which is the grain the model works at.",
       "schema": {
         "primaryKey": "ping_id",
@@ -80,6 +80,57 @@
             "name": "soc_pct",
             "type": "number",
             "description": "Battery state of charge, percent"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ev-vehicles",
+      "path": "ev_vehicles.csv",
+      "profile": "tabular-data-resource",
+      "format": "csv",
+      "mediatype": "text/csv",
+      "encoding": "utf-8",
+      "bytes": 115397,
+      "hash": "sha256:cc1fa861fda90464e82faab17206413453a0295e6256ff8beae57cc958de3f87",
+      "description": "One row per vehicle. Charging time is physics - energy needed divided by the slower of the car's rate and the station's - so battery size and max charge rate are what make a long dwell interpretable.",
+      "schema": {
+        "primaryKey": "vehicle_id",
+        "fields": [
+          {
+            "name": "vehicle_id",
+            "type": "string",
+            "description": "Unique vehicle identifier; joins to ev_pings.csv"
+          },
+          {
+            "name": "make",
+            "type": "string",
+            "description": "Invented manufacturer name"
+          },
+          {
+            "name": "model",
+            "type": "string",
+            "description": "Invented model name"
+          },
+          {
+            "name": "engine_type",
+            "type": "string",
+            "description": "BEV (2,598) or PHEV (402)"
+          },
+          {
+            "name": "battery_kwh",
+            "type": "integer",
+            "description": "Usable battery capacity in kWh, 9-105"
+          },
+          {
+            "name": "max_charge_kw",
+            "type": "integer",
+            "description": "The car's own charge-rate ceiling in kW, 4-250"
+          },
+          {
+            "name": "model_year",
+            "type": "integer",
+            "description": "2019-2026"
           }
         ]
       }
@@ -157,8 +208,8 @@
       "format": "csv",
       "mediatype": "text/csv",
       "encoding": "utf-8",
-      "bytes": 78397,
-      "hash": "sha256:658e9df0ad96370c6c5df78cbc8f489b6c708f96d9eeb7856a9a4c77e1822cb1",
+      "bytes": 76208,
+      "hash": "sha256:be5c8d302df16350dcd6847c4e2a7a296b14b5378515890488fce540322a0aca",
       "description": "ABC Corp's INTERNAL charging records - the labels. Covers ABC's 80 stations ONLY. Competitor charging happens in the ping data and leaves no trace here, which is the entire reason the model exists.",
       "schema": {
         "primaryKey": "session_id",

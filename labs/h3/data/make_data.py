@@ -3,7 +3,7 @@ Generate the synthetic dataset for the H3 charging-detection demo.
 
 Three CSVs plus 200-row samples, all reproducible from SEED:
 
-    ev_pings.csv             per-vehicle telematics trajectories over one week
+    ev_pings.csv             per-vehicle telematics trajectories over one day
     ev_stations.csv          charging stations, ABC Corp's and competitors'
     ev_charging_sessions.csv ABC's INTERNAL charging records - the labels
 
@@ -33,7 +33,9 @@ N_ABC = 80
 N_COMPETITOR = 250
 
 LOW_SPEED_KMH = 5.0                                  # <= this counts as parked
-WEEK_START = np.datetime64("2026-06-08T00:00:00")    # a Monday
+WEEK_START = np.datetime64("2026-06-08T00:00:00")    # a Monday; kept for seed stability
+# NOTE: despite the name, the walk is 6-10 stops per vehicle, so the data spans ONE DAY
+# (2026-06-08 00:00 to 19:03), not a week. Renaming it would not change the output.
 PING_MINUTES = 12                                    # nominal reporting interval
 
 # --- Real European cities: name, country, lat, lon, metro population (millions) ----------
@@ -178,7 +180,7 @@ def make_stations():
 
 # ------------------------------------------------------------------ trajectories
 def make_pings(stations, vehicles):
-    """Walk each vehicle through a week of stops and drives, emitting pings."""
+    """Walk each vehicle through a day of stops and drives, emitting pings."""
     st_lat = stations.lat.to_numpy(); st_lon = stations.lon.to_numpy()
     st_bear = stations.bay_bearing_deg.to_numpy(); st_kw = stations.max_power_kw.to_numpy()
     st_id = stations.station_id.to_numpy(); st_is_abc = stations.is_abc.to_numpy()
