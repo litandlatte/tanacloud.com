@@ -282,24 +282,24 @@ Locally (macOS / Linux):
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python demo.py
+jupyter lab H3_EV_Demand_Demo.ipynb
 ```
 
 On Windows the activation line is `.\.venv\Scripts\Activate.ps1`; everything else is the same.
 
 **Files**
 
-- `H3_EV_Demand_Demo.ipynb` — **the lab.** Section 1 is H3 fundamentals with interactive maps;
-  Section 2 is the business demo above. **Ships with all outputs saved**, so it can be presented
-  from even if the network fails.
-- `demo.py` — Section 2 only, headless, no folium.
-- `H3_EV_Demand_Demo.py` — the whole notebook as a percent-format script.
+- `H3_EV_Demand_Demo.ipynb` — **the lab, and the only source of truth.** Section 1 is H3
+  fundamentals with interactive maps; Section 2 is the business demo above. **Ships with all
+  outputs saved**, so it can be presented from even if the network fails.
 - `data/` — four CSVs, 200-row samples, data dictionary, `datapackage.json`, seeded generator.
 - `requirements.txt` · `README.md` (this guide).
 
-**🔑 Both `.py` files are generated from the notebook — edit the notebook, never them.** They are
-regenerated with `export_py.py`; hand-editing them is what let a stale paragraph survive in three
-files at once.
+> **The two `.py` exports were deleted on 2026-08-12.** `H3_EV_Demand_Demo.py` and `demo.py` were
+> generated copies of the notebook, and being copies they drifted: both still carried a paragraph
+> claiming the lab used `res 9, k=1` long after it had moved to `res 10, k=4`. The session runs
+> from Colab, so they earned nothing and cost a place for the documentation to rot. **One
+> artifact, one truth.**
 
 **Every code cell opens with a `WHAT / WHY / OUT` header** describing what it does, why it is
 there, and what should appear on screen. If a cell's output disagrees with its `OUT` line,

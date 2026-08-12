@@ -144,7 +144,7 @@
       "encoding": "utf-8",
       "bytes": 20924,
       "hash": "sha256:f67ffaf6bafd1ac86e1d5ca5b080989537fe9786fdc5b4e30f22b7b83840cf9a",
-      "description": "One row per charging station. 40% of competitor sites are deliberately co-located within 100-400 m of an ABC station: chargers cluster at the same retail parks, and those neighbours are the hardest negatives in the dataset.",
+      "description": "One row per charging station. 40% of competitor sites are deliberately co-located within 100-400 m of an ABC station: chargers cluster at the same retail parks, and those neighbors are the hardest negatives in the dataset.",
       "schema": {
         "primaryKey": "station_id",
         "fields": [

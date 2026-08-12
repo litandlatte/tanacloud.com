@@ -90,7 +90,7 @@ doing the same. Without knowing the car, a long dwell is ambiguous, which is exa
 
 **40% of competitor stations are deliberately co-located within 100–400 m of an ABC station.**
 Chargers really do cluster — retail parks and motorway services host several operators side by
-side — and these neighbours are the hardest negatives in the dataset. A car charging at the
+side — and these neighbors are the hardest negatives in the dataset. A car charging at the
 competitor next door has a rising SoC, a long dwell and a bay-aligned heading, metres from an ABC
 charger it never touched.
 
