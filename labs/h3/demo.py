@@ -273,16 +273,22 @@ grid.style.format({"edge_m": "{:,.1f}", "reach_m": "{:,.0f}", "recall": "{:.1%}"
 # is invisible in the `recall` column. The next cell is where it shows up.
 
 # %% [markdown]
-# **Read `ring_levels` next to `recall`.**
+# **Read `ring_levels` next to `recall`.** The sweep runs 5 resolutions × 4 ring widths, and the
+# two requirements knock out almost all of them:
 #
-# - **res 9, k=1** — 100% recall, but only **2** ring levels. That is the binary indicator again.
-# - **res 11, k=6** — beautifully graded, but recall has fallen to ~99% and each station now
-#   occupies 127 cells in the index.
+# - **res 8 and res 9, every k** — 100% recall, but only **2** ring levels. The cells are wider than
+#   the distances we are trying to measure, so every candidate is 0 or 1 rings away. That is the
+#   binary indicator again, and it throws away most of what distance was telling us.
+# - **res 11, k=4** — nicely graded at 5 levels, but recall has fallen to **98.0%**: two charging
+#   sessions in every hundred are dropped before the model ever sees them.
 # - **res 10, k=4** — **100% recall, 5 ring levels, ~526 m reach.** Graded, complete, and its reach
 #   matches the 500 m radius the haversine approach will use, so the two are genuinely comparable.
 #
-# That last point matters for the experiment: if the H3 path also changed the search radius, any
-# difference in model quality would be unattributable.
+# **Of all 20 combinations, that last one is the only row that is both complete and graded.** The
+# choice is not a preference; it is the single survivor of two hard constraints.
+#
+# That comparability point matters for the experiment: if the H3 path also changed the search
+# radius, any difference in model quality afterwards would be unattributable.
 
 # %%
 # ==============================================================================
